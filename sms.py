@@ -11,7 +11,7 @@ class smspool(threading.Thread):
 		self.srvid = srvid
 		self.apikey = key
 		self.name = name
-		self.min_price = 0
+		self.min_price = 99
 		self.min_country = ""
 		self.success_rate = 100
 		self.progress = 0
@@ -67,7 +67,7 @@ class smspool(threading.Thread):
 			self.msg = "Something wrong"
 			self.done = True
 			return 1
-		self.msg = "Srv: %s, Min-price: %s, Country: %s, Success rate: %s" % (self.srvid, self.min_price, self.min_country, self.success_rate)
+		self.msg = "Srv: %s, Min-price: %s, Country: %s, Success rate: %s" % (self.srvid, str(self.min_price), self.min_country, self.success_rate)
 		self.done = True
 		return 0
 
@@ -116,6 +116,7 @@ class workermonitor(threading.Thread):
 					workermonitor.results.append({"name" : wk["name"], "r" : wk["t"].get_message()})
 					workermonitor.workers.remove({"name" : wk["name"], "t" : wk["t"]})
 			time.sleep(10)
+
 		print("Stoping other workers")
 		for wk in self.workers:
 			wk["t"].stop()

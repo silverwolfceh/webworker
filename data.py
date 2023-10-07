@@ -1,4 +1,4 @@
-country_all1 = [{
+country_all = [{
   "ID": 1,
   "name": "United States",
   "short_name": "US",
@@ -725,7 +725,7 @@ country_all1 = [{
   "region": "Carribeans"
 }]
 
-country_all = [{
+country_all1 = [{
   "ID": 1,
   "name": "United States",
   "short_name": "US",

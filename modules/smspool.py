@@ -1,15 +1,15 @@
+import sys
+sys.path.append('../')
+from worker import webworker
 import requests
 import json
-import threading
-from data import country_all
+from .smspooldata import country_all
 import time
 
 
-class smspool(threading.Thread):
-	def __init__(self, srvid, key, name):
-		threading.Thread.__init__(self)
-		self.srvid = srvid
-		self.apikey = key
+class smspool(webworker):
+	def __init__(self, name, args):
+		super().__init__(name, args)
 		self.name = name
 		self.min_price = 99
 		self.min_country = ""
@@ -18,6 +18,17 @@ class smspool(threading.Thread):
 		self.stopreq = False
 		self.done = False
 		self.msg = ""
+		self.desc = "To find the cheapest price for a service id"
+		self.init_params(args)
+
+
+	def init_params(self, args):
+		try:
+			self.srvid = args.get('srvid', '')
+			self.apikey = args.get('key', 'VFoCdZK4WjDeArKacB43cE1K0Intx2Vu')
+		except:
+			print("Not valid argument", self.name)
+			return
 
 	def get_progress(self):
 		return self.progress
@@ -31,7 +42,7 @@ class smspool(threading.Thread):
 	def stop(self):
 		self.stopreq = True
 
-	def run(self):
+	def process(self):
 		urltemplate = "https://api.smspool.net/request/price?country=%s&service=%s&key=%s&pool=&name=%s"
 		totalcountries = len(country_all)
 		pstep = int(totalcountries / 100)
@@ -68,59 +79,5 @@ class smspool(threading.Thread):
 			self.done = True
 			return 1
 		self.msg = "Srv: %s, Min-price: %s, Country: %s, Success rate: %s" % (self.srvid, str(self.min_price), self.min_country, self.success_rate)
-		self.done = True
-		return 0
-
-
-class workermonitor(threading.Thread):
-	results = []
-	workers = []
-	def __init__(self):
-		threading.Thread.__init__(self)
-		self.stop = False
-		self.done = False
-
-	@staticmethod
-	def add_worker(name, thr):
-		workermonitor.workers.append({"name" : name, "t" : thr})
-
-	@staticmethod
-	def num_worker():
-		return len(workermonitor.workers)
-	
-	@staticmethod
-	def get_worker(wkname):
-		for wk in workermonitor.workers:
-			if wk['name'] == wkname:
-				return wk['t']
-		return None
-	
-	@staticmethod
-	def get_result(wkname):
-		for wk in workermonitor.results:
-			if wk['name'] == wkname:
-				return wk['r']
-		return None
-	
-	def stopall(self):
-		self.stop = True
-
-	def safestop(self):
-		while not self.done:
-			time.sleep(1)
-
-	def run(self):
-		while not self.stop:
-			for wk in self.workers:
-				if wk["t"].is_done():
-					workermonitor.results.append({"name" : wk["name"], "r" : wk["t"].get_message()})
-					workermonitor.workers.remove({"name" : wk["name"], "t" : wk["t"]})
-			time.sleep(10)
-
-		print("Stoping other workers")
-		for wk in self.workers:
-			wk["t"].stop()
-			while not wk["t"].is_done():
-				time.sleep(0.1)
 		self.done = True
 		return 0

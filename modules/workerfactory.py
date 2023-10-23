@@ -20,6 +20,7 @@ def gen_worker_desc():
         wker = workerfactory(k)(k, {})
         output[k] = wker.get_description()
     print(output)
+    return output
 
 
 if __name__ == '__main__':
